@@ -1,19 +1,49 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useUserContext } from '../../../components/context/context'
+import { Link, useNavigate } from "react-router-dom";
 
 import XSvg from "../../../components/svgs/X";
 
 import { MdOutlineMail } from "react-icons/md";
 import { MdPassword } from "react-icons/md";
+const API_URL = import.meta.env.VITE_API_URL
+import axios from "axios"
+
 
 const LoginPage = () => {
+	const navigate = useNavigate()
+	const { userProfile, setUserProfile } = useUserContext()
+	const [error, setError] = useState(null)
 	const [formData, setFormData] = useState({
 		username: "",
 		password: "",
 	});
-
+	//console.log(userProfile,'-------------pkjk')
 	const handleSubmit = (e) => {
 		e.preventDefault();
+
+		const trimmedData = {
+			username: formData.username.trim(),
+			password: formData.password,
+		}
+
+		const postData = async () => {
+			try {
+				const res = await axios.post(`${API_URL}/auth/login`, trimmedData, { withCredentials: true })
+				setUserProfile(res.data)
+				//console.log(res.data, "res----")
+				if (res.status == 200) {
+					navigate('/')
+				} else {
+					setError(res.error)
+				}
+			} catch (error) {
+				console.error(error, "error in sign up")
+				setError(error?.response?.data?.error)
+
+			}
+		}
+		postData()
 		console.log(formData);
 	};
 
@@ -56,7 +86,7 @@ const LoginPage = () => {
 						/>
 					</label>
 					<button className='btn rounded-full btn-primary text-white'>Login</button>
-					{isError && <p className='text-red-500'>Something went wrong</p>}
+					{error && <p className='text-red-500'>{error}</p>}
 				</form>
 				<div className='flex flex-col gap-2 mt-4'>
 					<p className='text-white text-lg'>{"Don't"} have an account?</p>

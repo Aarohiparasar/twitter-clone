@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import XSvg from "../../../components/svgs/X";
@@ -7,8 +7,14 @@ import { MdOutlineMail } from "react-icons/md";
 import { FaUser } from "react-icons/fa";
 import { MdPassword } from "react-icons/md";
 import { MdDriveFileRenameOutline } from "react-icons/md";
+import axios from "axios"
+
+const API_URL = import.meta.env.VITE_API_URL
+//console.log(API_URL)
 
 const SignUpPage = () => {
+	const navigate=useNavigate()
+	const [error,setError]=useState(null)
 	const [formData, setFormData] = useState({
 		email: "",
 		username: "",
@@ -18,9 +24,32 @@ const SignUpPage = () => {
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
+
+		const trimmedData = {
+        email: formData.email.trim(),
+        username: formData.username.trim(),
+        fullName: formData.fullName.trim(),
+        password: formData.password, // usually passwords shouldn't be trimmed
+    };
+
+		const postData = async () => {
+			try {
+				const res = await axios.post(`${API_URL}/auth/signup`, trimmedData, { withCredentials: true })
+				console.log(res.error, "res----")
+				if (res.status==200){
+				navigate('/login')
+				}else{
+                    setError(res.error)
+				}
+			} catch (error) {
+				setError(error?.response?.data.error)
+				console.error(error, "error in sign up")
+			}
+		}
+		postData()
 		console.log(formData);
 	};
-
+ //console.log(error,'----')
 	const handleInputChange = (e) => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
 	};
@@ -83,7 +112,7 @@ const SignUpPage = () => {
 						/>
 					</label>
 					<button className='btn rounded-full btn-primary text-white'>Sign up</button>
-					{isError && <p className='text-red-500'>Something went wrong</p>}
+					{error && <p className='text-red-500'>{error}</p>}
 				</form>
 				<div className='flex flex-col lg:w-2/3 gap-2 mt-4'>
 					<p className='text-white text-lg'>Already have an account?</p>
