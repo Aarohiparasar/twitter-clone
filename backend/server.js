@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth.routes.js"
 import cookieParser from "cookie-parser";
 import userRoutes from "./routes/user.routes.js"
 import postRoutes from "./routes/post.routes.js"
+import cors from 'cors'
 import notificationRoutes from "./routes/notification.routes.js"
 
 import { v2 as cloudinary } from 'cloudinary';
@@ -14,10 +15,19 @@ cloudinary.config({
     api_key: process.env.CLOUDINARY_API_KEY, 
     api_secret: process.env.CLOUDINARY_API_SECRET
 })
+cloudinary.api
+  .ping()
+  .then(() => console.log("Cloudinary connected successfully ✅"))
+  .catch((err) => console.error("Cloudinary connection failed ❌", err));
+
 
 const app=express()
-const port=process.env.PORT || 5000
+const port=process.env.PORT || 5050
 
+app.use(cors({
+  origin: process.env.FRONTEND_URL, 
+  credentials: true,
+}));
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 app.use(cookieParser())
